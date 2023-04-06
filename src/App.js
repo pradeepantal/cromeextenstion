@@ -6,10 +6,13 @@ import { MemoryRouter as Router , Routes, Route } from "react-router-dom";
 import Password from "./components/Password";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
+import { Provider } from 'react-redux'
+
 
 function App() {
   return (
     <div className='App'>
+  
     <Router>
         <Routes>
           <Route path="/" element={<CheckSecretKey />} />

@@ -1,3 +1,5 @@
+/*global chrome*/
+
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -28,19 +30,28 @@ const Login = () => {
   }, [userLogin]);
 
   const handleLogin = (e) => {
-    let keyFromStorage = localStorage.getItem("userInfo");
-    let data = JSON.parse(keyFromStorage);
-    if (decryptData(data.password) == password) {
-      navigate("/DashBoard");
-    } else {
-      alert("Enter correct password")
-    }
+    
+    chrome.storage.local.get(['userInfo'], function (result) {
+
+      if (atob(result.userInfo.password) == password) {
+        navigate("/DashBoard");
+      } else {
+        alert("Enter correct password")
+      }
+      
+    });
 
   }
 
   const handleReset = (e) => {
-     localStorage.removeItem("userInfo");
-     navigate("/");
+
+    chrome.runtime.sendMessage({key: "clear"}, function (result) {
+      if(result.key==='success'){
+        navigate("/");
+      }
+
+    })
+   
   }
 
   const decryptData = (text) => {

@@ -1,3 +1,6 @@
+/*global chrome*/
+
+
 import { Button, Container, Grid } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,21 +13,25 @@ const CheckSecretKey = ({ navigation }) => {
   const navigate = useNavigate();
   const sendToNextPage = (value) => {
     if (value) navigate("/verifyPassword", { state: { secret: value } });
-
   };
 
   useEffect(() => {
-    let userLogin = localStorage?.getItem("userInfo");
-     if(typeof(userLogin) !== "undefined" && userLogin !== null){
-      navigate("/Login");
-     }else{
-      const NewSecretKey = Math.random().toString(36).substring(2, 20);
-      setSecretKey(NewSecretKey);
-     }
+      chrome.storage.local.get(['userInfo'], function (result) {
+        if(typeof(result.userInfo) !== "undefined" && result.userInfo !== null){
+          setSecretKey(atob(result.userInfo.key));
+          if(result.userInfo.status!==0){
+            navigate("/Login");
+          }
+       }else{
+       
+          setSecretKey(result.userInfo.key);
+       }
+    });    
+     
 
 
     
-  }, []);
+  }, [setSecretKey]);
 
   const decryptData = (text) => {
     const bytes = CryptoJS.AES.decrypt(text, secretPass);
@@ -36,6 +43,8 @@ const CheckSecretKey = ({ navigation }) => {
     const data = CryptoJS.AES.encrypt(JSON.stringify(text), secretPass).toString();
     return data;
   };
+
+ 
 
   return (
     <Container
@@ -53,7 +62,7 @@ const CheckSecretKey = ({ navigation }) => {
           sx={{ mt: 3, mb: 2 }}
           variant="contained"
           color="primary"
-          onClick={() => sendToNextPage(secretKey)}
+          onClick={() => sendToNextPage(btoa(secretKey))}
         >
           Next
         </Button>

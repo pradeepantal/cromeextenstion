@@ -1,3 +1,5 @@
+/*global chrome*/
+
 import { Button, Container, Grid } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
@@ -11,15 +13,27 @@ const Dashboard = () => {
   const secretPass = "XkhZG4fW2t2W";
 
   const LogOut = (value) => {
-    //localStorage.removeItem("userInfo");
+    chrome.storage.local.get(['userInfo'], function (response) {
+      let data = {
+        password: response.userInfo.password,
+        key: response.userInfo.key,
+        status:  0,
+      };
+      chrome.storage.local.set({userInfo: data}, function() {
+        console.log('Value is set to ' + data);
+      });
+
+    })
     navigate("/Login");
   };
 
   useEffect(() => {
-    let keyFromStorage = localStorage.getItem("userInfo");
-    let data = JSON.parse(keyFromStorage);
-    let key = decryptData(data.key);
-    setSecretKey(key);
+    chrome.storage.local.get(['userInfo'], function (result) {
+      setSecretKey(atob(result.userInfo.key));
+    })
+   
+    
+    
   }, [navigate]);
 
   const decryptData = (text) => {
@@ -35,16 +49,22 @@ const Dashboard = () => {
   };
 
   const regenerateKey = () => {
-    let keyFromStorage = localStorage.getItem("userInfo");
-    let local = JSON.parse(keyFromStorage);
-    let key = (Math.random().toString(36).substring(2, 20))
-    let data = {
-      password: local.password,
-      key: encryptData(key)
-    };
-    localStorage.setItem("userInfo", JSON.stringify(data));
-    setSecretKey(key);
-    return data;
+    chrome.runtime.sendMessage({key: "reset"}, function (result) {
+      setSecretKey(atob(result.key));
+      chrome.storage.local.get(['userInfo'], function (response) {
+        let data = {
+          password: response.userInfo.password,
+          key: result.key,
+          status:  0,
+        };
+        chrome.storage.local.set({userInfo: data}, function() {
+          console.log('Value is set to ' + data);
+        });
+
+      })
+      
+    })
+  
   };
 
   return (

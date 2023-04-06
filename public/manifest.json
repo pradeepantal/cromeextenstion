@@ -6,7 +6,9 @@
   "background": {
     "service_worker": "./background.js"
   },
-  "permissions": [],
+  "permissions": [
+    "storage"
+  ],
   "author": "Zubin",
   "homepage_url": "https://github.com/pradeepantal/",
 

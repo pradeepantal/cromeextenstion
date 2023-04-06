@@ -1,3 +1,5 @@
+/*global chrome*/
+
 import React, { useState } from "react";
 import { Link, useParams } from 'react-router-dom';
 import CryptoJS from "crypto-js";
@@ -30,19 +32,27 @@ const Password = ({ route, navigation }) => {
   const { state } = useLocation();
   const { secret } = state;
 
-  console.log(secret)
 
   const checkPassword = (password) => {
-    if (password) {
-      let data = {
-        password: encryptData(password),
-        key: encryptData(secret)
+   var secret;
+    chrome.storage.local.get(['userInfo'], function (result) {
+      
+      if (password) {
+        let data = {
+          password: btoa(password),
+          key: result.userInfo.key,
+          status:1
+        };      
+        chrome.storage.local.set({userInfo: data}, function() {
+          console.log('Value is set to ' + data);
+        });     
+        navigate("/Login");
+      }
 
-      };
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      navigate("/Login");
-    }
+    });
+    
   };
+
 
 
   const encryptData = (text) => {
